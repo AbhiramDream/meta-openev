@@ -130,30 +130,36 @@ def info() -> Dict[str, Any]:
 
 
 @app.post("/reset", tags=["OpenEnv"])
-def reset(req: ResetRequest) -> Dict[str, Any]:
+def reset(req: Optional[ResetRequest] = None) -> Dict[str, Any]:
     """
     Initialise a new episode.
 
     Returns the full starting state of the environment.
     """
     global _env
-    _env = SupplyChainEnv(task=req.task, seed=req.seed)
-    state = _env.reset(seed=req.seed)
+    task = req.task if req else "easy"
+    seed = req.seed if req else None
+    
+    _env = SupplyChainEnv(task=task, seed=seed)
+    state = _env.reset(seed=seed)
     return {
         "status": "reset",
-        "task": req.task,
-        "seed": req.seed,
+        "task": task,
+        "seed": seed,
         "state": state.to_dict(),
     }
 
 
 @app.post("/step", tags=["OpenEnv"])
-def step(req: StepRequest) -> Dict[str, Any]:
+def step(req: Optional[StepRequest] = None) -> Dict[str, Any]:
     """
     Execute one agent action and return (observation, reward, done, info).
     """
     env = _get_env()
-    action = SupplyAction.from_int(req.action, quantity=req.quantity)
+    action_idx = req.action if req else 0  # Default to 0 (Wait)
+    q = req.quantity if req else None
+    
+    action = SupplyAction.from_int(action_idx, quantity=q)
     obs, reward, done, info = env.step(action)
     return {
         "observation": obs.to_dict(),
