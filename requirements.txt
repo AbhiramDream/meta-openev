@@ -1,0 +1,18 @@
+# Core web server
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+python-dotenv>=1.0.0
+
+# HTTP client
+requests>=2.31.0
+
+# LLM baseline agent
+openai>=1.30.0
+
+# YAML parsing (for openenv.yaml tooling)
+pyyaml>=6.0.1
+
+# Testing utilities
+pytest>=8.0.0
+httpx>=0.27.0        # async test client for FastAPI

@@ -1,0 +1,134 @@
+name: supply-chain-openenv
+version: 1.0.0
+description: >
+  OpenEnv-compatible reinforcement learning environment for
+  Supply Chain Inventory Management. An AI agent manages warehouse
+  inventory and shipping decisions to minimize stockouts, delays,
+  and storage costs.
+
+# ──────────────────────────────────────────────
+# Environment endpoints
+# ──────────────────────────────────────────────
+endpoints:
+  reset:
+    method: POST
+    path: /reset
+    description: Initialize a new episode
+    request_schema:
+      type: object
+      properties:
+        task:
+          type: string
+          enum: [easy, medium, hard]
+          default: easy
+        seed:
+          type: integer
+          nullable: true
+
+  step:
+    method: POST
+    path: /step
+    description: Execute agent action; return observation, reward, done, info
+    request_schema:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: "0=wait, 1=order_inventory, 2=ship_products, 3=emergency_restock"
+        quantity:
+          type: number
+          nullable: true
+
+  state:
+    method: GET
+    path: /state
+    description: Return the current full environment state
+
+# ──────────────────────────────────────────────
+# Action space
+# ──────────────────────────────────────────────
+action_space:
+  type: discrete
+  n: 4
+  labels:
+    0: wait
+    1: order_inventory
+    2: ship_products
+    3: emergency_restock
+
+# ──────────────────────────────────────────────
+# Observation space
+# ──────────────────────────────────────────────
+observation_space:
+  type: box
+  low: 0.0
+  high: 1.0
+  fields:
+    - name: current_stock
+      description: Fraction of warehouse capacity currently occupied
+    - name: demand_forecast
+      description: Normalised expected demand this step
+    - name: warehouse_capacity
+      description: Fraction of warehouse capacity still free
+    - name: supplier_delay
+      description: Lead-time as fraction of maximum lead-time
+    - name: storage_cost
+      description: Storage cost per unit (normalised)
+    - name: product_stocks
+      description: Per-product stock levels (list, empty for easy task)
+    - name: product_demands
+      description: Per-product demand forecasts (list)
+    - name: disruption_level
+      description: 1.0 if supplier disruption active, else 0.0
+
+# ──────────────────────────────────────────────
+# Reward specification
+# ──────────────────────────────────────────────
+reward:
+  range: [-2.0, 1.5]
+  shaping:
+    - signal: "+1.0"
+      condition: demand satisfied (stock >= demand)
+    - signal: "+0.5"
+      condition: efficient storage (20%–70% capacity utilised)
+    - signal: "-1.0"
+      condition: stockout (stock < demand)
+    - signal: "-0.5"
+      condition: excessive overstock (>85% capacity used)
+
+# ──────────────────────────────────────────────
+# Tasks
+# ──────────────────────────────────────────────
+tasks:
+  - id: easy
+    description: Single warehouse, single product, stable demand
+    max_steps: 50
+    grader_module: tasks.easy_task
+    grader_fn: grade
+    score_range: [0.0, 1.0]
+
+  - id: medium
+    description: 3 products with varying demand patterns and minor disruptions
+    max_steps: 75
+    grader_module: tasks.medium_task
+    grader_fn: grade
+    score_range: [0.0, 1.0]
+
+  - id: hard
+    description: 5 products with supply disruptions and demand spikes
+    max_steps: 100
+    grader_module: tasks.hard_task
+    grader_fn: grade
+    score_range: [0.0, 1.0]
+
+# ──────────────────────────────────────────────
+# Deployment
+# ──────────────────────────────────────────────
+deployment:
+  port: 7860
+  health_endpoint: /health
+  docker: true
+  huggingface_spaces: true
