@@ -6,13 +6,12 @@ python-dotenv>=1.0.0
 
 # HTTP client
 requests>=2.31.0
+openai>=1.14.0
 
-# LLM baseline agent
-openai>=1.30.0
+# OpenEnv Specification (Mandatory for validator)
+PyYAML>=6.0.1
+openenv-core>=0.2.0
 
-# YAML parsing (for openenv.yaml tooling)
-pyyaml>=6.0.1
-
-# Testing utilities
-pytest>=8.0.0
-httpx>=0.27.0        # async test client for FastAPI
+# Build and Lock Tool
+uv>=0.1.0
+hatchling>=1.22.0
