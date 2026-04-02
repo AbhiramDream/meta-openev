@@ -1,3 +1,12 @@
+---
+title: Supply Chain OpenEnv
+emoji: 📦
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
 # 📦 Supply Chain Inventory Management — OpenEnv
 
 > **An OpenEnv-compatible reinforce learning environment** where an AI agent manages warehouse inventory and shipping decisions to minimize stockouts, delays, and storage costs.
