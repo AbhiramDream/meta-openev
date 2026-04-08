@@ -119,7 +119,8 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
         + 0.20 * stockout_component
         + 0.10 * overstock_component
     )
-    return round(min(1.0, score), 4)
+    # Ensure score is strictly between 0 and 1 (0.01 to 0.99)
+    return round(max(0.01, min(0.99, score)), 4)
 
 
 # ──────────────────────────────────────────────

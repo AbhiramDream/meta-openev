@@ -91,8 +91,8 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
             bonus += 0.05  # 5% bonus per clean (zero-stockout) trial
 
     raw_score = total / n_trials
-    base = max(0.0, min(1.0, raw_score / MAX_POSSIBLE_REWARD))
-    score = min(1.0, base + bonus / n_trials)
+    base = max(0.01, min(0.90, raw_score / MAX_POSSIBLE_REWARD))
+    score = min(0.99, base + bonus / n_trials)
     return round(score, 4)
 
 

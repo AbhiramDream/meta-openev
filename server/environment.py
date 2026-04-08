@@ -265,7 +265,13 @@ class SupplyChainEnv:
         s.step_number += 1
         s.total_reward += reward
 
-        done = s.step_number >= s.max_steps
+        # Explicitly enforce max steps for each task to ensure termination
+        max_steps_allowed = s.max_steps if s.max_steps > 0 else 75
+        done = s.step_number >= max_steps_allowed
+
+        # Safety fallback: Never exceed 120 steps regardless of task
+        if s.step_number >= 120:
+            done = True
 
         obs = self._make_observation(s)
         info = {
