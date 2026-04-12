@@ -89,8 +89,8 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
     
     raw_total = 0.7*r_comp + 0.2*so_comp + 0.1*os_comp
     # Strictly in (0.05, 0.95)
-    score = 0.05 + 0.90 * max(0.0, min(1.0, raw_total))
-    return round(float(score), 4)
+    score = 0.1 + 0.8 * max(0.0, min(1.0, raw_total))
+    return float(score)
 
 
 # ──────────────────────────────────────────────

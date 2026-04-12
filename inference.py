@@ -317,7 +317,7 @@ def run_episode(
     # ── Score ─────────────────────────────────────────────────────────────────
     elapsed   = time.time() - t0
     max_r     = MAX_REWARDS.get(task, 100.0)
-    raw = max(0.0, min(1.0, total_reward / max_r)); score = round(float(0.05 + 0.90 * raw), 4)
+    raw = max(0.0, min(1.0, total_reward / max_r)); score = float(0.1 + 0.8 * raw)
     stockouts = last_info.get("stockouts", 0)
 
     log_end(
