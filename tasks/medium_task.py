@@ -72,14 +72,12 @@ def run_episode(
 
 
 # ──────────────────────────────────────────────
-# Automated grader  →  score ∈ [0.0, 1.0]
+# Automated grader  →  score ∈ (0.0, 1.0)
 # ──────────────────────────────────────────────
 
 def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
     """
-    Evaluate agent over multiple seeds and return normalised score in [0, 1].
-
-    Bonus modifier: agents that avoid stockouts get a +5% bonus per clean trial.
+    Evaluate agent over multiple seeds and return normalised score.
     """
     total = 0.0
     bonus = 0.0
@@ -91,10 +89,9 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
             bonus += 0.05  # 5% bonus per clean (zero-stockout) trial
 
     raw_score = total / n_trials
-    # Ensure base score stays within bound
-    base = max(0.05, min(0.90, raw_score / MAX_POSSIBLE_REWARD))
-    # Final score strictly in (0, 1)
-    score = max(0.05, min(0.95, base + bonus / n_trials))
+    base = max(0.0, min(1.0, raw_score / MAX_POSSIBLE_REWARD))
+    # Strictly in (0.05, 0.95)
+    score = 0.05 + 0.90 * max(0.0, min(1.0, base + bonus / n_trials))
     return round(float(score), 4)
 
 

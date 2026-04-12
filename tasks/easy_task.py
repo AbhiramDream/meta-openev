@@ -72,17 +72,12 @@ def run_episode(
 
 
 # ──────────────────────────────────────────────
-# Automated grader  →  score ∈ [0.0, 1.0]
+# Automated grader  →  score ∈ (0.0, 1.0)
 # ──────────────────────────────────────────────
 
 def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
     """
     Evaluate an agent over `n_trials` seeds and return a normalised score.
-
-    Score formula
-    -------------
-    raw_score = mean total_reward across trials
-    score     = clamp(raw_score / MAX_POSSIBLE_REWARD, 0, 1)
     """
     total = 0.0
     for seed in range(n_trials):
@@ -90,8 +85,8 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
         total += r
 
     raw_score = total / n_trials
-    # Ensure score is strictly between 0 and 1 (using 0.001-0.999 margin for safety)
-    score = max(0.05, min(0.95, raw_score / MAX_POSSIBLE_REWARD))
+    # Strictly in (0.05, 0.95) range regardless of agent performance
+    score = 0.05 + 0.90 * max(0.0, min(1.0, raw_score / MAX_POSSIBLE_REWARD))
     return round(float(score), 4)
 
 

@@ -32,18 +32,6 @@ def run_episode(
     agent_fn: Callable[[dict], int],
     seed: int = 0,
 ) -> Tuple[float, Dict]:
-    """
-    Run a full hard-task episode.
-
-    Parameters
-    ----------
-    agent_fn : callable — returns action int given observation dict
-    seed     : int      — episode seed
-
-    Returns
-    -------
-    (total_reward, episode_info)
-    """
     env = SupplyChainEnv(task=TASK_NAME, seed=seed)
     state = env.reset(seed=seed)
     done = False
@@ -79,48 +67,30 @@ def run_episode(
 
 
 # ──────────────────────────────────────────────
-# Automated grader  →  score ∈ [0.0, 1.0]
+# Automated grader  →  score ∈ (0.0, 1.0)
 # ──────────────────────────────────────────────
 
 def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
-    """
-    Grade the agent with a weighted score that rewards:
-      - High total reward (primary, 70% weight)
-      - Low stockout rate  (secondary, 20% weight)
-      - Low overstock rate (tertiary, 10% weight)
-
-    All components normalised to [0, 1] before weighting.
-    """
     rewards = []
-    stockout_rates = []
-    overstock_rates = []
-    max_steps = 100  # hard task max steps
+    so_rates = []
+    os_rates = []
+    max_steps = 100
 
     for seed in range(n_trials):
         r, info = run_episode(agent_fn, seed=seed)
         rewards.append(r)
-        stockout_rates.append(info["stockouts"] / max(info["steps"], 1))
-        overstock_rates.append(info["overstock_steps"] / max(info["steps"], 1))
+        so_rates.append(info["stockouts"] / max(info["steps"], 1))
+        os_rates.append(info["overstock_steps"] / max(info["steps"], 1))
 
-    # Normalise reward
-    avg_reward = sum(rewards) / n_trials
-    reward_component = max(0.0, min(1.0, avg_reward / MAX_POSSIBLE_REWARD))
-
-    # Low stockout rate (1 = zero stockouts, 0 = stockout every step)
-    avg_so_rate = sum(stockout_rates) / n_trials
-    stockout_component = max(0.0, 1.0 - avg_so_rate)
-
-    # Low overstock rate
-    avg_os_rate = sum(overstock_rates) / n_trials
-    overstock_component = max(0.0, 1.0 - avg_os_rate)
-
-    score = (
-        0.70 * reward_component
-        + 0.20 * stockout_component
-        + 0.10 * overstock_component
-    )
-    # Ensure score is strictly between 0 and 1 (0.001 to 0.999)
-    return round(max(0.05, min(0.95, float(score))), 4)
+    raw_reward = sum(rewards) / n_trials
+    r_comp = max(0.0, min(1.0, raw_reward / MAX_POSSIBLE_REWARD))
+    so_comp = max(0.0, 1.0 - sum(so_rates) / n_trials)
+    os_comp = max(0.0, 1.0 - sum(os_rates) / n_trials)
+    
+    raw_total = 0.7*r_comp + 0.2*so_comp + 0.1*os_comp
+    # Strictly in (0.05, 0.95)
+    score = 0.05 + 0.90 * max(0.0, min(1.0, raw_total))
+    return round(float(score), 4)
 
 
 # ──────────────────────────────────────────────
@@ -128,12 +98,6 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
 # ──────────────────────────────────────────────
 
 def heuristic_agent(obs: dict) -> int:
-    """
-    Conservative strategy for the hard task:
-      - Pre-order aggressively when disruption is active or stock is low
-      - Emergency restock when stock is critically low
-      - Ship products when stock is healthy
-    """
     stock = obs.get("current_stock", 0.5)
     disruption = obs.get("disruption_level", 0.0)
     product_stocks: List[float] = obs.get("product_stocks", [])
@@ -145,12 +109,11 @@ def heuristic_agent(obs: dict) -> int:
     if min_stock < 0.08 or stock < 0.08:
         return int(ActionType.EMERGENCY_RESTOCK)
 
-    # Anticipate disruption or high demand: order early and liberally
+    # Anticipate disruption or high demand
     if disruption > 0 or demand_forecast > 0.7:
         if stock < 0.50:
             return int(ActionType.ORDER_INVENTORY)
 
-    # Normal ordering threshold
     if min_stock < 0.30 or stock < 0.25:
         return int(ActionType.ORDER_INVENTORY)
 
