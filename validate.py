@@ -35,9 +35,9 @@ from dotenv import load_dotenv
 # Automatically load environment variables from .env file
 load_dotenv()
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # ANSI colours
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 GREEN  = "\033[92m"
 RED    = "\033[91m"
@@ -49,9 +49,9 @@ PASS_MARK = f"{GREEN}✔ PASS{RESET}"
 FAIL_MARK = f"{RED}✖ FAIL{RESET}"
 WARN_MARK = f"{YELLOW}⚠ WARN{RESET}"
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # Helpers
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 CheckResult = Tuple[bool, str]   # (passed, detail_message)
 
@@ -64,9 +64,9 @@ def _get(url: str, timeout: int = 15) -> requests.Response:
     return requests.get(url, timeout=timeout)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # Individual checks
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 def check_env_vars() -> CheckResult:
     """Mandatory environment variables are set."""
@@ -302,9 +302,9 @@ def check_requirements_file() -> CheckResult:
     return True, "requirements.txt OK"
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # Server auto-start helper
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 def _start_server(port: int = 7860) -> subprocess.Popen:
     proc = subprocess.Popen(
@@ -328,9 +328,9 @@ def _start_server(port: int = 7860) -> subprocess.Popen:
     raise RuntimeError("Server did not become healthy within 30 seconds")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # Main validator
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 def run_validation(env_url: str, auto_server: bool = False) -> int:
     server_proc: Optional[subprocess.Popen] = None
@@ -344,7 +344,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
             print(f"{RED}Could not start server: {e}{RESET}")
             return 1
 
-    # ── Define all checks ────────────────────────────────────────────────────
+    # -- Define all checks ----------------------------------------------------
     # Checks that don't need the server
     static_checks: List[Tuple[str, Callable[[], CheckResult]]] = [
         ("Mandatory env vars (API_BASE_URL / MODEL_NAME / HF_TOKEN)", check_env_vars),
@@ -370,7 +370,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
 
     all_checks = static_checks + server_checks
 
-    # ── Run checks ────────────────────────────────────────────────────────────
+    # -- Run checks ------------------------------------------------------------
     width = max(len(name) for name, _ in all_checks) + 4
     passed_count = 0
     total        = len(all_checks)
@@ -381,7 +381,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
     print(f"{BOLD}{'='*70}{RESET}\n")
     print(f"  Server URL : {env_url}")
     print(f"  Checks     : {total}\n")
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
 
     for name, fn in all_checks:
         try:
@@ -395,9 +395,9 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
         if passed:
             passed_count += 1
 
-    # ── Summary ───────────────────────────────────────────────────────────────
+    # -- Summary ---------------------------------------------------------------
     failed_count = total - passed_count
-    print(f"\n{'─'*70}")
+    print(f"\n{'-'*70}")
     overall = (f"{GREEN}{BOLD}ALL {total} CHECKS PASSED ✔{RESET}"
                if failed_count == 0
                else f"{RED}{BOLD}{failed_count}/{total} CHECKS FAILED ✖{RESET}")
@@ -420,9 +420,9 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
     return 0 if failed_count == 0 else 1
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 # CLI
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Supply Chain OpenEnv — pre-submission validator")
