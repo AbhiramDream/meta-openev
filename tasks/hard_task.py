@@ -120,7 +120,7 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
         + 0.10 * overstock_component
     )
     # Ensure score is strictly between 0 and 1 (0.001 to 0.999)
-    return round(max(0.001, min(0.999, float(score))), 4)
+    return round(max(0.05, min(0.95, float(score))), 4)
 
 
 # ──────────────────────────────────────────────

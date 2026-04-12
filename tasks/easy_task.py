@@ -91,7 +91,7 @@ def grade(agent_fn: Callable[[dict], int], n_trials: int = 5) -> float:
 
     raw_score = total / n_trials
     # Ensure score is strictly between 0 and 1 (using 0.001-0.999 margin for safety)
-    score = max(0.001, min(0.999, raw_score / MAX_POSSIBLE_REWARD))
+    score = max(0.05, min(0.95, raw_score / MAX_POSSIBLE_REWARD))
     return round(float(score), 4)
 
 

@@ -108,21 +108,21 @@ tasks:
     max_steps: 50
     grader_module: tasks.easy_task
     grader_fn: grade
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
 
   - id: medium
     description: 3 products with varying demand patterns and minor disruptions
     max_steps: 75
     grader_module: tasks.medium_task
     grader_fn: grade
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
 
   - id: hard
     description: 5 products with supply disruptions and demand spikes
     max_steps: 100
     grader_module: tasks.hard_task
     grader_fn: grade
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
 
 # ──────────────────────────────────────────────
 # Deployment
