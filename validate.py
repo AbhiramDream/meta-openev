@@ -1,5 +1,5 @@
 """
-validate.py — Pre-submission validation script for Supply Chain OpenEnv.
+validate.py  Pre-submission validation script for Supply Chain OpenEnv.
 
 Runs every check from the hackathon pre-submission checklist and prints
 a PASS / FAIL summary.  Exit code 0 = all checks passed.
@@ -45,9 +45,9 @@ YELLOW = "\033[93m"
 BOLD   = "\033[1m"
 RESET  = "\033[0m"
 
-PASS_MARK = f"{GREEN}✔ PASS{RESET}"
-FAIL_MARK = f"{RED}✖ FAIL{RESET}"
-WARN_MARK = f"{YELLOW}⚠ WARN{RESET}"
+PASS_MARK = f"{GREEN} PASS{RESET}"
+FAIL_MARK = f"{RED} FAIL{RESET}"
+WARN_MARK = f"{YELLOW} WARN{RESET}"
 
 # ------------------------------------------------------------------------------
 # Helpers
@@ -96,7 +96,7 @@ def check_openenv_yaml() -> CheckResult:
     missing = [k for k in required_keys if k not in cfg]
     if missing:
         return False, f"openenv.yaml missing keys: {missing}"
-    return True, f"Valid — {len(cfg.get('tasks', []))} tasks defined"
+    return True, f"Valid  {len(cfg.get('tasks', []))} tasks defined"
 
 
 def check_health(env_url: str) -> CheckResult:
@@ -104,7 +104,7 @@ def check_health(env_url: str) -> CheckResult:
     try:
         r = _get(f"{env_url}/health")
         if r.status_code == 200:
-            return True, f"HTTP 200 — {r.json()}"
+            return True, f"HTTP 200  {r.json()}"
         return False, f"HTTP {r.status_code}"
     except Exception as e:
         return False, str(e)
@@ -147,7 +147,7 @@ def check_step(env_url: str) -> CheckResult:
         missing_obs = [f for f in obs_fields if f not in obs]
         if missing_obs:
             return False, f"Observation missing fields: {missing_obs}"
-        return True, "step() OK — all fields present"
+        return True, "step() OK  all fields present"
     except Exception as e:
         return False, str(e)
 
@@ -216,10 +216,10 @@ def check_task_graders() -> CheckResult:
         results = {}
         for name, grader, agent in [("easy", ge, ae), ("medium", gm, am), ("hard", gh, ah)]:
             score = grader(agent, n_trials=3)
-            if not (0.0 <= score <= 1.0):
+            if not (0.0 < score < 1.0):
                 return False, f"{name} grader returned {score} (out of [0,1])"
             results[name] = score
-        return True, f"Scores — {results}"
+        return True, f"Scores  {results}"
     except Exception as e:
         return False, str(e)
 
@@ -336,7 +336,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
     server_proc: Optional[subprocess.Popen] = None
 
     if auto_server:
-        print(f"{YELLOW}Starting local server…{RESET}")
+        print(f"{YELLOW}Starting local server{RESET}")
         try:
             server_proc = _start_server()
             print(f"{GREEN}Server started.{RESET}\n")
@@ -360,7 +360,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
 
     # Checks that need the running server
     server_checks: List[Tuple[str, Callable[[], CheckResult]]] = [
-        ("GET /health → 200",                       lambda: check_health(env_url)),
+        ("GET /health  200",                       lambda: check_health(env_url)),
         ("POST /reset (easy/medium/hard)",           lambda: check_reset(env_url)),
         ("POST /step returns obs/reward/done/info",  lambda: check_step(env_url)),
         ("GET /state returns full state",            lambda: check_state(env_url)),
@@ -377,7 +377,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
     results      = []
 
     print(f"\n{BOLD}{'='*70}{RESET}")
-    print(f"{BOLD}  Supply Chain OpenEnv — Pre-Submission Validator{RESET}")
+    print(f"{BOLD}  Supply Chain OpenEnv  Pre-Submission Validator{RESET}")
     print(f"{BOLD}{'='*70}{RESET}\n")
     print(f"  Server URL : {env_url}")
     print(f"  Checks     : {total}\n")
@@ -398,9 +398,9 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
     # -- Summary ---------------------------------------------------------------
     failed_count = total - passed_count
     print(f"\n{'-'*70}")
-    overall = (f"{GREEN}{BOLD}ALL {total} CHECKS PASSED ✔{RESET}"
+    overall = (f"{GREEN}{BOLD}ALL {total} CHECKS PASSED {RESET}"
                if failed_count == 0
-               else f"{RED}{BOLD}{failed_count}/{total} CHECKS FAILED ✖{RESET}")
+               else f"{RED}{BOLD}{failed_count}/{total} CHECKS FAILED {RESET}")
     print(f"  {overall}")
     print(f"{'='*70}\n")
 
@@ -425,7 +425,7 @@ def run_validation(env_url: str, auto_server: bool = False) -> int:
 # ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Supply Chain OpenEnv — pre-submission validator")
+    parser = argparse.ArgumentParser(description="Supply Chain OpenEnv  pre-submission validator")
     parser.add_argument(
         "--env-url",
         default=os.environ.get("ENV_BASE_URL", "http://localhost:7860"),
